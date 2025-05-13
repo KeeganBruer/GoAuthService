@@ -1,8 +1,8 @@
-package routes
+package controllers
 
 import (
 	"fmt"
-	"go-auth-service/jwttokens"
+	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
 
@@ -10,7 +10,8 @@ type LoginRequest struct {
 	Username string `json:"username"`
 }
 type LoginResponse struct {
-	Test string `json:"test"`
+	Token   string `json:"token"`
+	Refresh string `json:"refresh"`
 }
 
 // Post Request to the login endpoint
@@ -19,15 +20,23 @@ func Request_Post_Login(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
-
-	token, err := jwttokens.CreateToken()
+	data := &jwttokens.NewTokenData{
+		UserID: body.Username,
+	}
+	token, err := jwttokens.CreateToken(data)
+	if err != nil {
+		res.SendString("ERROR")
+		return
+	}
+	refreshToken, err := jwttokens.CreateToken(data)
 	if err != nil {
 		res.SendString("ERROR")
 		return
 	}
 
 	resVal := &LoginResponse{
-		Test: token,
+		Token:   token,
+		Refresh: refreshToken,
 	}
 	res.SendJSON(resVal)
 }
