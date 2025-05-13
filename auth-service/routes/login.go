@@ -19,11 +19,13 @@ func Request_Post_Login(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
+
 	token, err := jwttokens.CreateToken()
 	if err != nil {
 		res.SendString("ERROR")
 		return
 	}
+
 	resVal := &LoginResponse{
 		Test: token,
 	}
