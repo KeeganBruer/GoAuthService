@@ -1,6 +1,7 @@
 package controller_login
 
 import (
+	"go-auth-service/models"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
@@ -17,6 +18,8 @@ type LoginResponse struct {
 func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
+
+	models.GetDBConnection()
 
 	//Create a pair of JWT tokens with different expirations
 	data := &jwttokens.NewTokenData{
