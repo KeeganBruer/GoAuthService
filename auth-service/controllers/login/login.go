@@ -1,7 +1,6 @@
-package controllers
+package controller_login
 
 import (
-	"fmt"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
@@ -15,25 +14,26 @@ type LoginResponse struct {
 }
 
 // Post Request to the login endpoint
-func Request_Post_Login(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
-	fmt.Println("got POST request to /login")
-
+func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
+
+	//Create a pair of JWT tokens with different expirations
 	data := &jwttokens.NewTokenData{
 		UserID: body.Username,
 	}
 	token, err := jwttokens.CreateToken(data)
 	if err != nil {
-		res.SendString("ERROR")
+		res.SendString("Could not create token")
 		return
 	}
 	refreshToken, err := jwttokens.CreateToken(data)
 	if err != nil {
-		res.SendString("ERROR")
+		res.SendString("Could not create refresh token")
 		return
 	}
 
+	//Construct and send response
 	resVal := &LoginResponse{
 		Token:   token,
 		Refresh: refreshToken,

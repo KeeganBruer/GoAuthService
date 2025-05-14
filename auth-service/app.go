@@ -1,18 +1,17 @@
 package app
 
 import (
-	"fmt"
-	"go-auth-service/controllers"
+	controller_login "go-auth-service/controllers/login"
+	controller_signup "go-auth-service/controllers/signup"
 	"kbrouter"
 )
 
 func CreateApp() *kbrouter.Router {
 	router := kbrouter.NewRouter()
-	router.AddRoute("POST", "/login", controllers.Request_Post_Login)
-	router.AddRoute("GET", "/wild", func(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
-		// Implementation for creating a new product
-		fmt.Println("got request to /wild")
-		res.SendString("OKAY\n")
-	})
+
+	//declare endpoints
+	router.AddRoute("POST", "/login", controller_login.Login_PostRequest)
+	router.AddRoute("POST", "/signup", controller_signup.Signup_PostRequest)
+
 	return router
 }

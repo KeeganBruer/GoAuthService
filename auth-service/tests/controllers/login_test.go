@@ -3,30 +3,21 @@ package controller_tests
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	app "go-auth-service"
-	"go-auth-service/controllers"
+	controller_login "go-auth-service/controllers/login"
 	"go-auth-service/services/jwttokens"
-	"kbrouter"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-var router *kbrouter.Router
-
-func TestMain(m *testing.M) {
-	router = app.CreateApp()
-	m.Run()
-}
-
 func TestLogin(t *testing.T) {
-	fmt.Println("Running Login Test")
+
+	TargetUsername := "Test User"
 
 	//Create Request Details
-	reqBody := &controllers.LoginRequest{
-		Username: "Test User",
+	reqBody := &controller_login.LoginRequest{
+		Username: TargetUsername,
 	}
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(reqBody)
@@ -48,7 +39,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	//Convert http reponse to Login response object
-	var res controllers.LoginResponse
+	var res controller_login.LoginResponse
 	json.NewDecoder(httpRes.Body).Decode(&res)
 
 	if res.Token == "" {
@@ -59,8 +50,14 @@ func TestLogin(t *testing.T) {
 		t.Error("Empty Refresh Token\n")
 		return
 	}
-	data, err := jwttokens.DecodeToken(res.Token)
 
-	fmt.Println("data", data.UserID)
-	fmt.Println("Successfully completed login test")
+	data, err := jwttokens.DecodeToken(res.Token)
+	if err != nil {
+		t.Error("Could not decode jwt token\n")
+		return
+	}
+	if data.UserID != TargetUsername {
+		t.Error("UserID does not match the TargetUsername\n")
+		return
+	}
 }
