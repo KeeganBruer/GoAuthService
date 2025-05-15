@@ -14,10 +14,9 @@ func Signup_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body SignupRequest
 	req.ParseBodyJSON(&body)
 
-	user_model := models.GetUserModel()
-	user_model.AddUser(&models.User{
-		Username: body.Username,
-	})
+	user := models.NewUser()
+	user.Username = body.Username
+	user.Save()
 
 	res.SendString("OKAY")
 }

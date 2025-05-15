@@ -18,7 +18,8 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
 
-	//user_model := models.GetUserModel()
+	// user := models.GetUserByID(1)
+	// user.Save()
 
 	//Create a pair of JWT tokens with different expirations
 	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
