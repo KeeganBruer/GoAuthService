@@ -11,7 +11,7 @@ import (
 
 type NewTokenData struct {
 	UserID        string
-	minutesTilExp int
+	MinutesTilExp int
 }
 type TokenData struct {
 	Expiration time.Time
@@ -26,7 +26,7 @@ func CreateToken(data *NewTokenData) (string, error) {
 	ServerName := os.Getenv("ServerName")
 
 	//Construct token expiration
-	minutes := data.minutesTilExp
+	minutes := data.MinutesTilExp
 	if minutes == 0 {
 		minutes = 60
 	}

@@ -2,10 +2,15 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 type UserModel struct {
 	db_conn *sql.DB
+}
+
+type User struct {
+	Username string
 }
 
 func GetUserModel() *UserModel {
@@ -16,6 +21,6 @@ func GetUserModel() *UserModel {
 	return m
 }
 
-func (m *UserModel) AddUser() {
-
+func (m *UserModel) AddUser(user *User) {
+	fmt.Println("Adding new user to database")
 }

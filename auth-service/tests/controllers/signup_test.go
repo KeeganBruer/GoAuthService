@@ -1,12 +1,8 @@
 package controller_tests
 
 import (
-	"bytes"
-	"encoding/json"
 	controller_signup "go-auth-service/controllers/signup"
-	"log"
-	"net/http"
-	"net/http/httptest"
+	main_test "go-auth-service/tests"
 	"testing"
 )
 
@@ -18,20 +14,11 @@ func TestSignup(t *testing.T) {
 	reqBody := &controller_signup.SignupRequest{
 		Username: TargetUsername,
 	}
-	var buf bytes.Buffer
-	err := json.NewEncoder(&buf).Encode(reqBody)
+	httpRes, err := main_test.MakePostRequest(router, t, "/signup", reqBody)
 	if err != nil {
-		log.Fatal(err)
+		t.Errorf("Error sending request\n")
 		return
 	}
-
-	//Construct request object and response recorder
-	req := httptest.NewRequest(http.MethodPost, "/signup", &buf)
-	w := httptest.NewRecorder()
-
-	//process the request through the app and produce a http response
-	router.ServeHTTP(w, req)
-	httpRes := w.Result()
 
 	if httpRes.StatusCode != 200 {
 		t.Errorf("Status Code: %d\n", httpRes.StatusCode)

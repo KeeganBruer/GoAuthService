@@ -1,7 +1,6 @@
 package controller_login
 
 import (
-	"go-auth-service/models"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
@@ -19,18 +18,21 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
 
-	models.GetDBConnection()
+	//user_model := models.GetUserModel()
 
 	//Create a pair of JWT tokens with different expirations
-	data := &jwttokens.NewTokenData{
-		UserID: body.Username,
-	}
-	token, err := jwttokens.CreateToken(data)
+	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
+		UserID:        body.Username,
+		MinutesTilExp: 30,
+	})
 	if err != nil {
 		res.SendString("Could not create token")
 		return
 	}
-	refreshToken, err := jwttokens.CreateToken(data)
+	refreshToken, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
+		UserID:        body.Username,
+		MinutesTilExp: 60,
+	})
 	if err != nil {
 		res.SendString("Could not create refresh token")
 		return

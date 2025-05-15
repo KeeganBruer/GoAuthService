@@ -1,7 +1,7 @@
 package controller_tests
 
 import (
-	app "go-auth-service"
+	controllers "go-auth-service/controllers"
 	"kbrouter"
 	"testing"
 )
@@ -9,7 +9,7 @@ import (
 var router *kbrouter.Router
 
 func TestMain(m *testing.M) {
-	router = app.CreateApp()
+	router = controllers.CreateApp()
 	m.Run()
 
 }

@@ -1,4 +1,4 @@
-package app
+package controllers
 
 import (
 	controller_login "go-auth-service/controllers/login"

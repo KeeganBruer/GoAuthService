@@ -1,12 +1,13 @@
-package app
+package main
 
 import (
 	"fmt"
+	"go-auth-service/controllers"
 )
 
 func main() {
 	port := 8080
-	app := CreateApp()
+	app := controllers.CreateApp()
 
 	err := app.Listen(port, func() {
 		msg := fmt.Sprintf("Listening on port: %d", port)
