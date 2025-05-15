@@ -11,6 +11,7 @@ type KBRequest struct {
 	Path    string
 }
 
+// Parse the content of a post request
 func (req *KBRequest) ParseBodyJSON(out any) {
 	decoder := json.NewDecoder(req.httpReq.Body)
 	err := decoder.Decode(out)

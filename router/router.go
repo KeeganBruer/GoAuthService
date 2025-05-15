@@ -43,6 +43,8 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
 	}
 	http.NotFound(w, httpReq)
 }
+
+// Set up a http server using the router to handle serving routes
 func (r *Router) Listen(port int, cb func()) error {
 	addr := fmt.Sprintf("%s%d", ":", port)
 	server := http.Server{
@@ -53,6 +55,7 @@ func (r *Router) Listen(port int, cb func()) error {
 	return server.ListenAndServe()
 }
 
+// Add a route to the router
 func (r *Router) AddRoute(method, path string, handler func(req *KBRequest, res *KBResponse)) {
 	if r.routes[path] == nil {
 		r.routes[path] = make(map[string]func(req *KBRequest, res *KBResponse))
