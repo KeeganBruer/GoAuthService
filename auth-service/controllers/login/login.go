@@ -1,12 +1,15 @@
 package controller_login
 
 import (
+	"fmt"
+	"go-auth-service/models"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
 
 type LoginRequest struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 }
 type LoginResponse struct {
 	Token   string `json:"token"`
@@ -18,8 +21,8 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
 
-	// user := models.GetUserByID(1)
-	// user.Save()
+	user := models.GetUserByUsername(body.Username)
+	fmt.Printf("%s %s", body.Password, user.Username)
 
 	//Create a pair of JWT tokens with different expirations
 	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{

@@ -8,9 +8,12 @@ import (
 )
 
 func CreateApp() *kbrouter.Router {
-	router := kbrouter.NewRouter()
+
+	//Setup database connection
 	models.ConnectDB()
 
+	// Setup  API router
+	router := kbrouter.NewRouter()
 	//declare endpoints
 	router.AddRoute("POST", "/login", controller_login.Login_PostRequest)
 	router.AddRoute("POST", "/signup", controller_signup.Signup_PostRequest)

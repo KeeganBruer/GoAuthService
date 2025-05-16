@@ -7,6 +7,7 @@ import (
 
 type SignupRequest struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // Post Request to the login endpoint
@@ -16,6 +17,7 @@ func Signup_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 
 	user := models.NewUser()
 	user.Username = body.Username
+	user.Password = body.Password
 	user.Save()
 
 	res.SendString("OKAY")

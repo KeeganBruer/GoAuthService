@@ -10,3 +10,11 @@ content-type: application/json
 {
     "username":"keegan"
 }
+###
+POST http://localhost:8080/signup HTTP/1.1
+content-type: application/json
+
+{
+    "username":"keegan",
+    "password":"temp_pass"
+}
