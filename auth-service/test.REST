@@ -4,7 +4,7 @@ GET http://localhost:3000/healthz HTTP/1.1
 GET http://localhost:8080/healthz HTTP/1.1
 
 ###
-POST http://localhost:8080/login HTTP/1.1
+POST http://localhost:3000/login HTTP/1.1
 content-type: application/json
 
 {
@@ -12,7 +12,7 @@ content-type: application/json
     "password":"temp_pass"
 }
 ###
-POST http://localhost:8080/signup HTTP/1.1
+POST http://localhost:3000/signup HTTP/1.1
 content-type: application/json
 
 {
@@ -20,5 +20,5 @@ content-type: application/json
     "password":"temp_pass"
 }
 ###
-GET http://localhost:8080/verify HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NDUyOTMsImlzcyI6IiIsInN1YiI6ImtlZWdhbiJ9.tU2aPbr47I-3w79Ndw_P2Grp35I9ei-r0-MD2fuMB9g
+GET http://localhost:3000/token/verify HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NTQ3OTksImlzcyI6ImF1dGgtc2VydmVyIiwic3ViIjoia2VlZ2FuIn0.X7Py__HgcTjdN8JVD4LZKSXzdkCBoM6p4o5CKssI8QA

@@ -38,6 +38,21 @@ func (builder *SQLQueryBuilder) Connect(cfg *mysql.Config) {
 	builder.db_conn = db
 
 }
+func (builder *SQLQueryBuilder) UseDatabase(dbName string) {
+	stm := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName)
+	fmt.Println(stm)
+	_, err := builder.db_conn.Exec(stm)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	useStm := fmt.Sprintf("USE %s;", dbName)
+	fmt.Println(useStm)
+	_, err = builder.db_conn.Exec(useStm)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 // === SQL Table ===
 type SQLTable struct {
@@ -97,9 +112,18 @@ func (query *SQLQuery) Where(condition string) *SQLQuery {
 	query.whereCondition = condition
 	return query
 }
+func (query *SQLQuery) GetStatement() string {
+	stm := fmt.Sprintf("SELECT %s", "*")
+	stm = fmt.Sprintf("%s FROM %s", stm, query.table.tableName)
+	if query.whereCondition != "" {
+		stm = fmt.Sprintf("%s WHERE %s", stm, query.whereCondition)
+	}
+	stm = stm + ";"
+	return stm
+}
 
 func (query *SQLQuery) FindAll(EachCB func(get func(dest ...any) error) error) error {
-	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
+	statement := query.GetStatement()
 	fmt.Println(statement)
 	rows, err := query.table.builder.db_conn.Query(statement)
 	if err != nil {
@@ -124,7 +148,7 @@ func (query *SQLQuery) FindAll(EachCB func(get func(dest ...any) error) error) e
 	return nil
 }
 func (query *SQLQuery) FindOne(dest ...any) error {
-	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
+	statement := query.GetStatement()
 	fmt.Println(statement)
 
 	row := query.table.builder.db_conn.QueryRow(statement)
@@ -156,34 +180,61 @@ func (insert *SQLInsert) AddIntColumn(column string, val int) {
 	insert.columns[column] = fmt.Sprintf("%d", val)
 }
 func (insert *SQLInsert) AddStringColumn(column string, val string) {
+	//wrap strings in quotes
+	//TODO sanatize string inputs
 	insert.columns[column] = fmt.Sprintf("\"%s\"", val)
 }
-
-// Send the sql insert statement to the database
-func (insert *SQLInsert) Send() {
+func (insert *SQLInsert) GetStatement() string {
 	colDef := ""
 	colVal := ""
 	for k, v := range insert.table.columns {
+		//If first item
 		if colDef == "" {
 			colDef = k
 		} else {
+			//all other items are appended with a proceeding comma
 			colDef = fmt.Sprintf("%s, %s", colDef, k)
 		}
+
+		//process the data-to-be-inserted's matching value
 		val := insert.columns[k]
-		if val == "" {
-			if strings.Contains(v, "VARCHAR") {
+		if val == "" { //it the value is empty
+			if strings.Contains(v, "VARCHAR") { //if the table column def is a string
+				//empty string column
 				val = "\"\""
 			} else {
+				//null value
 				val = " "
 			}
 		}
-		if colVal == "" {
+		if colVal == "" { //first value added
 			colVal = val
 		} else {
+			//all other items are appended with a proceeding comma, like the coldefs
 			colVal = fmt.Sprintf("%s, %s", colVal, val)
 		}
 	}
-	statement := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", insert.table.tableName, colDef, colVal)
+	//build statement
+	stm := fmt.Sprintf("INSERT INTO %s", insert.table.tableName)
+	stm = fmt.Sprintf("%s (%s) VALUES (%s)", stm, colDef, colVal)
+
+	stm = stm + ";"
+	return stm
+}
+
+// Send the sql insert statement to the database
+func (insert *SQLInsert) Send() bool {
+	statement := insert.GetStatement()
 	fmt.Println(statement)
-	insert.table.builder.db_conn.Exec(statement)
+	results, err := insert.table.builder.db_conn.Exec(statement)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	rows, err := results.RowsAffected()
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	return rows > 0
 }

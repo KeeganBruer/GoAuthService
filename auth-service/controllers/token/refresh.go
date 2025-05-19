@@ -1,38 +1,31 @@
-package controller_login
+package controller_token
 
 import (
-	"go-auth-service/models"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
 )
 
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
 }
-type LoginResponse struct {
+type RefreshResponse struct {
 	Token   string `json:"token"`
 	Refresh string `json:"refresh"`
 }
 
 // Post Request to the login endpoint
-func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
-	var body LoginRequest
+func Refresh_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
+	var body RefreshRequest
 	req.ParseBodyJSON(&body)
 
-	user, err := models.GetUserByUsername(body.Username)
+	existing_token, err := jwttokens.DecodeToken(body.RefreshToken)
 	if err != nil {
-		res.SetStatusCode(404).SendString("Could not find user")
+		res.SetStatusCode(400).SendString("Error decoding token")
 		return
 	}
-	if !user.CheckPassword(body.Password) {
-		res.SetStatusCode(401).SendString("Incorrect password")
-		return
-	}
-
 	//Create a pair of JWT tokens with different expirations
 	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		UserID:        body.Username,
+		UserID:        existing_token.UserID,
 		MinutesTilExp: 30,
 	})
 	if err != nil {
@@ -40,16 +33,15 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 		return
 	}
 	refreshToken, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		UserID:        body.Username,
+		UserID:        existing_token.UserID,
 		MinutesTilExp: 60,
 	})
 	if err != nil {
 		res.SetStatusCode(400).SendString("Could not create refresh token")
 		return
 	}
-
 	//Construct and send response
-	resVal := &LoginResponse{
+	resVal := &RefreshResponse{
 		Token:   token,
 		Refresh: refreshToken,
 	}

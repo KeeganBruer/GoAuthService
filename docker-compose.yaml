@@ -1,4 +1,15 @@
 services:
+  db:
+    container_name: db
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
   auth-service:
     image: auth-service:1.0.0
     container_name: auth_service
@@ -7,8 +18,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       - ServerName=auth-server
       - JWTSecretToken=auth-server
-      - DBAdrs=host.docker.internal:3306
+      - DBUser=root
+      - DBPass=example
+      - DBAdrs=db:3306
       - DBName=goauthservice
