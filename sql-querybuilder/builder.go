@@ -76,7 +76,7 @@ func (table *SQLTable) EnsureTableExistsInDB() {
 	}
 	defineTable := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (\n%s\n);", table.tableName, colDef)
 	fmt.Println(defineTable)
-	//table.builder.db_conn.Exec(defineTable)
+	table.builder.db_conn.Exec(defineTable)
 }
 
 // === SQL Query Methods ===
@@ -86,7 +86,7 @@ type SQLQuery struct {
 }
 
 // Start a new query statement
-func (table *SQLTable) NewQuery() *SQLQuery {
+func (table *SQLTable) NewSelect() *SQLQuery {
 	query := &SQLQuery{
 		table: table,
 	}
@@ -99,13 +99,21 @@ func (query *SQLQuery) Where(condition string) *SQLQuery {
 }
 
 func (query *SQLQuery) FindAll() {
-	q := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
-	fmt.Println(q)
+	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
+	fmt.Println(statement)
 }
-func (query *SQLQuery) FindOne(out any) {
-	q := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
-	fmt.Println(q)
-	//query.table.builder.db_conn.Query("")
+func (query *SQLQuery) FindOne(dest ...any) error {
+	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
+	fmt.Println(statement)
+
+	row := query.table.builder.db_conn.QueryRow(statement)
+	if err := row.Scan(dest...); err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("albumsById: no such album")
+		}
+		return fmt.Errorf("albumsById: %v", err)
+	}
+	return nil
 }
 
 // === SQL Insert Methods ===
@@ -154,7 +162,7 @@ func (insert *SQLInsert) Send() {
 			colVal = fmt.Sprintf("%s, %s", colVal, val)
 		}
 	}
-	q := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", insert.table.tableName, colDef, colVal)
-	fmt.Println(q)
-	//insert.table.builder.db_conn.Exec("")
+	statement := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", insert.table.tableName, colDef, colVal)
+	fmt.Println(statement)
+	insert.table.builder.db_conn.Exec(statement)
 }

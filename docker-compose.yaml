@@ -10,3 +10,5 @@ services:
     environment:
       - ServerName=auth-server
       - JWTSecretToken=auth-server
+      - DBAdrs=host.docker.internal:3306
+      - DBName=goauthservice

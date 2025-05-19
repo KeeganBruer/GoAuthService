@@ -10,7 +10,7 @@ userTable.DefineColumn("id", "INT AUTO_INCREMENT PRIMARY KEY")
 userTable.DefineColumn("username", "VARCHAR(100) NOT NULL")
 userTable.DefineColumn("password", "VARCHAR(100) NOT NULL")
 userTable.EnsureTableExistsInDB()
-builder.DefineTable(userTable)
+builder.DefineTable(userTable) //Allows access from builder.GetTable()
 
 
 q := builder.GetTable("users").NewInsert()
@@ -21,7 +21,7 @@ q.AddStringColumn("password", user.Password)
 q.Send()
 
 
-q := builder.GetTable("users").NewQuery()
+q := builder.GetTable("users").NewSelect()
 q.Where(fmt.Sprintf("username = %s", name))
 user := &User{}
 q.FindOne(&user)

@@ -15,9 +15,14 @@ func Signup_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body SignupRequest
 	req.ParseBodyJSON(&body)
 
+	_, err := models.GetUserByUsername(body.Username)
+	if err == nil {
+		res.SetStatusCode(409).SendString("User already exists")
+		return
+	}
 	user := models.NewUser()
 	user.Username = body.Username
-	user.Password = body.Password
+	user.SetPassword(body.Password)
 	user.Save()
 
 	res.SendString("OKAY")

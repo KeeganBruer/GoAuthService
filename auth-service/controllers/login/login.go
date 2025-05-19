@@ -1,7 +1,6 @@
 package controller_login
 
 import (
-	"fmt"
 	"go-auth-service/models"
 	"go-auth-service/services/jwttokens"
 	"kbrouter"
@@ -21,8 +20,15 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
 
-	user := models.GetUserByUsername(body.Username)
-	fmt.Printf("%s %s", body.Password, user.Username)
+	user, err := models.GetUserByUsername(body.Username)
+	if err != nil {
+		res.SetStatusCode(404).SendString("Could not find user")
+		return
+	}
+	if !user.CheckPassword(body.Password) {
+		res.SetStatusCode(401).SendString("Incorrect password")
+		return
+	}
 
 	//Create a pair of JWT tokens with different expirations
 	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
