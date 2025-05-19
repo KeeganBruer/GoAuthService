@@ -1,4 +1,4 @@
-package controller_token
+package controller_api_key
 
 import (
 	"go-auth-service/services/jwttokens"

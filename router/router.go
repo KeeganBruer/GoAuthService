@@ -45,13 +45,13 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
 }
 
 // Set up a http server using the router to handle serving routes
-func (r *Router) Listen(port int, cb func()) error {
+func (r *Router) Listen(port int, cb func(port int)) error {
 	addr := fmt.Sprintf("%s%d", ":", port)
 	server := http.Server{
 		Addr:    addr,
 		Handler: r,
 	}
-	cb()
+	cb(port)
 	return server.ListenAndServe()
 }
 

@@ -3,18 +3,19 @@ package jwttokens
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type NewTokenData struct {
-	UserID        string
+	SessionID     int
 	MinutesTilExp int
 }
 type TokenData struct {
 	Expiration time.Time
-	UserID     string
+	SessionID  int
 }
 
 // Create a JWT token with the given data
@@ -34,7 +35,7 @@ func CreateToken(data *NewTokenData) (string, error) {
 	//Construct JWT claims
 	claims := jwt.MapClaims{
 		"iss": ServerName,
-		"sub": data.UserID,
+		"sub": fmt.Sprintf("%d", data.SessionID),
 		"exp": exp.Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -66,9 +67,14 @@ func DecodeToken(tokenString string) (*TokenData, error) {
 	//Construct Token data from claims
 	exp, _ := claims.GetExpirationTime()
 	sub, _ := claims.GetSubject()
+
+	SessionID, err := strconv.Atoi(sub)
+	if err != nil {
+		return nil, err
+	}
 	data := &TokenData{
 		Expiration: exp.Time,
-		UserID:     sub,
+		SessionID:  SessionID,
 	}
 	return data, nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -184,6 +185,12 @@ func (insert *SQLInsert) AddStringColumn(column string, val string) {
 	//TODO sanatize string inputs
 	insert.columns[column] = fmt.Sprintf("\"%s\"", val)
 }
+func (insert *SQLInsert) AddDateTimeColumn(column string, val time.Time) {
+	//wrap strings in quotes
+	//TODO sanatize string inputs
+	dateTime := val.Format(time.DateTime)
+	insert.columns[column] = fmt.Sprintf("\"%s\"", dateTime)
+}
 func (insert *SQLInsert) GetStatement() string {
 	colDef := ""
 	colVal := ""
@@ -215,7 +222,7 @@ func (insert *SQLInsert) GetStatement() string {
 		}
 	}
 	//build statement
-	stm := fmt.Sprintf("INSERT INTO %s", insert.table.tableName)
+	stm := fmt.Sprintf("REPLACE INTO %s", insert.table.tableName)
 	stm = fmt.Sprintf("%s (%s) VALUES (%s)", stm, colDef, colVal)
 
 	stm = stm + ";"

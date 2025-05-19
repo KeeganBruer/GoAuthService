@@ -25,7 +25,7 @@ func Refresh_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	}
 	//Create a pair of JWT tokens with different expirations
 	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		UserID:        existing_token.UserID,
+		SessionID:     existing_token.SessionID,
 		MinutesTilExp: 30,
 	})
 	if err != nil {
@@ -33,7 +33,7 @@ func Refresh_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 		return
 	}
 	refreshToken, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		UserID:        existing_token.UserID,
+		SessionID:     existing_token.SessionID,
 		MinutesTilExp: 60,
 	})
 	if err != nil {

@@ -1,10 +1,13 @@
 GET http://localhost:3000/healthz HTTP/1.1
 
 ###
+GET http://localhost:3001/healthz HTTP/1.1
+
+###
 GET http://localhost:8080/healthz HTTP/1.1
 
 ###
-POST http://localhost:3000/login HTTP/1.1
+POST http://localhost:3001/login HTTP/1.1
 content-type: application/json
 
 {
@@ -19,6 +22,16 @@ content-type: application/json
     "username":"keegan",
     "password":"temp_pass"
 }
+
+###
+POST http://localhost:3000/token/refresh HTTP/1.1
+content-type: application/json
+
+{
+    "refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NTg4NjcsImlzcyI6ImF1dGgtc2VydmVyIiwic3ViIjoia2VlZ2FuIn0._oC5QfQuP-q34CMGP39VWs2ePLCZMmZXlffT3mMdetE"
+}
+
 ###
 GET http://localhost:3000/token/verify HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NTQ3OTksImlzcyI6ImF1dGgtc2VydmVyIiwic3ViIjoia2VlZ2FuIn0.X7Py__HgcTjdN8JVD4LZKSXzdkCBoM6p4o5CKssI8QA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NjU3MDksImlzcyI6ImF1dGgtc2VydmVyIiwic3ViIjoiMSJ9.POPKtsIPt_gIHyB6gp1fy41lcnVoaHU33RqEmSGX1SI
+
