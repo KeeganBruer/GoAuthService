@@ -39,4 +39,4 @@ This service is supposed to be set up behind a load balancer, allowing public ac
 <br/>
 
 
-Full Swagger docs can be found [here](#)
+Full Swagger docs can be seen by running the demo. View how to run the demo and browse the SwaggerDocs [here](../README.md#demo)
