@@ -2,11 +2,14 @@
 An open-source authorization micro-service with SSO support.
 
 ## Components
-| folder | component description |
-| - | - |
-| [auth-service](./auth-service/README.md)          | Core Service
-| [router](./router/README.md)                      | a go based http router
-| [sql-querybuilder](./sql-querybuilder/README.md)  | a go based query builder
+This project includes multiple components, including the base micro-service and the modules that support it.
+
+| Folder | Component Description |
+| :-- | :-- |
+| [auth-service](./auth-service/README.md)          | An Authorization micro-service
+| [router](./router/README.md)                      | A HTTP Router written in GoLang
+| [sql-querybuilder](./sql-querybuilder/README.md)  | A SQL Query Builder written in GoLang
+| [swagger](./swagger/swagger.yaml)           | SwaggerDocs for the micro-service
 
 ## Demo
 Using the service in a containerized environment is the fastest way to get the demo working.
