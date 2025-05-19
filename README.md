@@ -16,3 +16,8 @@ To get started, clone this repo and run the following command in the root direct
 ```bash
 docker compose up
 ```
+
+You can then use the /swagger endpoint on the private server to access a SwaggerUI page
+```
+http://localhost:3001/swagger
+```

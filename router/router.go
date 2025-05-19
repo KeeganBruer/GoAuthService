@@ -27,6 +27,19 @@ func NewRouter() *Router {
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if httpReq.Method == "OPTIONS" {
+		res := &KBResponse{
+			writer: w,
+		}
+		res.SetHeader("Allow", "*")
+		res.SetHeader("Access-Control-Allow-Credentials", "true")
+		res.SetHeader("Access-Control-Allow-Origin", "*")
+		res.SetHeader("Vary", "Origin")
+		res.SetHeader("Access-Control-Allow-Headers", "*")
+		res.SendString("OKAY")
+		return
+	}
 	if handlers, ok := r.routes[httpReq.URL.Path]; ok {
 		if handler, methodExists := handlers[httpReq.Method]; methodExists {
 			req := &KBRequest{
