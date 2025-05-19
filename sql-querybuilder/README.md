@@ -1,5 +1,8 @@
 # SQL Query Builder
+Currently Supported Drivers: MySQL
 
+## Usage
+1. Define configuration and connect to database 
 ```golang
 cfg := mysql.NewConfig()
 cfg.User = os.Getenv("DBUser")
@@ -10,7 +13,10 @@ cfg.DBName = os.Getenv("DBName")
 
 builder = sqlquerybuilder.NewSQLQueryBuilder()
 builder.Connect(cfg)
+```
 
+2. Define a table 
+```golang
 //define user table
 userTable := builder.NewTable("users")
 userTable.DefineColumn("id", "INT AUTO_INCREMENT PRIMARY KEY")
@@ -19,7 +25,10 @@ userTable.DefineColumn("password", "VARCHAR(100) NOT NULL")
 userTable.EnsureTableExistsInDB()
 builder.DefineTable(userTable) //Allows access from builder.GetTable()
 
+```
 
+3. Create a new insert statement for a given table
+```golang
 q := builder.GetTable("users").NewInsert()
 //Add data to insert statement
 q.AddIntColumn("id", user.ID)
@@ -27,7 +36,10 @@ q.AddStringColumn("username", user.Username)
 q.AddStringColumn("password", user.Password)
 q.Send()
 
+```
 
+4. Execute a select statement
+```golang
 q := builder.GetTable("users").NewSelect()
 q.Where(fmt.Sprintf("username = %s", name))
 
