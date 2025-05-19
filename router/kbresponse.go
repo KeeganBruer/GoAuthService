@@ -16,7 +16,9 @@ func (res *KBResponse) SetHeader(key string, val string) {
 
 // Send a string as the content of the response
 func (res *KBResponse) SendString(val string) {
-	res.SetHeader("Content-Type", "text/plain")
+	if res.writer.Header().Get("Content-Type") == "" {
+		res.SetHeader("Content-Type", "text/plain")
+	}
 	res.writer.Write([]byte(val))
 }
 

@@ -3,10 +3,15 @@ package kbrouter
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
+type RouteHandler = func(req *KBRequest, res *KBResponse)
+
 type Router struct {
-	routes map[string]map[string]func(req *KBRequest, res *KBResponse)
+	middlewares []RouteHandler
+	routes      map[string]map[string]RouteHandler
+	subRouters  map[string]*Router
 }
 
 type HealthzResponse struct {
@@ -15,23 +20,32 @@ type HealthzResponse struct {
 
 // Create a new kbrouter
 func NewRouter() *Router {
+	middleware := &[]RouteHandler{}
 	router := &Router{
-		routes: make(map[string]map[string]func(req *KBRequest, res *KBResponse)),
+		middlewares: *middleware,
+		routes:      make(map[string]map[string]RouteHandler),
+		subRouters:  make(map[string]*Router),
 	}
-	router.AddRoute("GET", "/healthz", func(req *KBRequest, res *KBResponse) {
-		// Implementation for creating a new product
-		fmt.Println("got request to /healthz")
-		res.SendString("OKAY\n")
-	})
+
 	return router
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	r.HandleServe(w, httpReq, "")
+}
+func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basepath string) {
+	CurrPath := strings.Replace(httpReq.URL.Path, basepath, "", 1)
+	req := &KBRequest{
+		httpReq:  httpReq,
+		Host:     httpReq.URL.Host,
+		CurrPath: CurrPath,
+		Path:     httpReq.URL.Path,
+	}
+	splitPath := strings.Split(req.CurrPath, "/")
+	res := &KBResponse{
+		writer: w,
+	}
 	if httpReq.Method == "OPTIONS" {
-		res := &KBResponse{
-			writer: w,
-		}
 		res.SetHeader("Allow", "*")
 		res.SetHeader("Access-Control-Allow-Credentials", "true")
 		res.SetHeader("Access-Control-Allow-Origin", "*")
@@ -40,16 +54,23 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
 		res.SendString("OKAY")
 		return
 	}
-	if handlers, ok := r.routes[httpReq.URL.Path]; ok {
+
+	//Run middlewares
+	for i := range r.middlewares {
+		middleware := r.middlewares[i]
+		middleware(req, res)
+	}
+
+	subPath := fmt.Sprintf("/%s", splitPath[1])
+	//Check for sub routers
+	if r.subRouters[subPath] != nil {
+		fullPath := fmt.Sprintf("%s%s", basepath, subPath)
+		r.subRouters[subPath].HandleServe(w, httpReq, fullPath)
+		return
+	}
+	//Handle this router's routes
+	if handlers, ok := r.routes[req.CurrPath]; ok {
 		if handler, methodExists := handlers[httpReq.Method]; methodExists {
-			req := &KBRequest{
-				httpReq: httpReq,
-				Host:    httpReq.URL.Host,
-				Path:    httpReq.URL.Path,
-			}
-			res := &KBResponse{
-				writer: w,
-			}
 			handler(req, res)
 			return
 		}
@@ -68,10 +89,31 @@ func (r *Router) Listen(port int, cb func(port int)) error {
 	return server.ListenAndServe()
 }
 
+func (r *Router) AddMiddleware(handlers ...RouteHandler) {
+	r.middlewares = append(r.middlewares, handlers...)
+}
+
 // Add a route to the router
-func (r *Router) AddRoute(method, path string, handler func(req *KBRequest, res *KBResponse)) {
+func (r *Router) AddRoute(method, path string, handlers ...RouteHandler) {
 	if r.routes[path] == nil {
-		r.routes[path] = make(map[string]func(req *KBRequest, res *KBResponse))
+		r.routes[path] = make(map[string]RouteHandler)
 	}
-	r.routes[path][method] = handler
+	if len(handlers) > 1 {
+		r.routes[path][method] = func(req *KBRequest, res *KBResponse) {
+			for i := range handlers {
+				handlers[i](req, res)
+			}
+		}
+	} else if len(handlers) == 1 {
+		r.routes[path][method] = handlers[0]
+	}
+}
+func (r *Router) AddSubRouter(basePath string, router *Router) {
+	r.subRouters[basePath] = router
+}
+
+func (r *Router) AddHealthRoute(route string) {
+	r.AddRoute("GET", route, func(req *KBRequest, res *KBResponse) {
+		res.SendString("OKAY\n")
+	})
 }

@@ -1,14 +1,13 @@
 package controllers
 
 import (
-	"fmt"
 	controller_api_key "go-auth-service/controllers/api_key"
 	controller_login "go-auth-service/controllers/login"
 	controller_signup "go-auth-service/controllers/signup"
+	controller_swagger "go-auth-service/controllers/swagger"
 	controller_token "go-auth-service/controllers/token"
 	"go-auth-service/models"
 	"kbrouter"
-	"path/filepath"
 )
 
 type App struct {
@@ -21,34 +20,24 @@ func CreateApp() *App {
 	//Setup database connection
 	models.ConnectDB()
 
-	// Setup  API router
+	// Setup public API
 	publicRouter := kbrouter.NewRouter()
-	//declare endpoints
+	publicRouter.AddHealthRoute("/healthz")
+
 	publicRouter.AddRoute("POST", "/login", controller_login.Login_PostRequest)
 	publicRouter.AddRoute("POST", "/signup", controller_signup.Signup_PostRequest)
-	publicRouter.AddRoute("GET", "/token/verify", controller_token.Verify_GetRequest)
-	publicRouter.AddRoute("POST", "/token/refresh", controller_token.Refresh_PostRequest)
+
+	tokenRouter := controller_token.CreateTokenRouter()
+	publicRouter.AddSubRouter("/token", tokenRouter)
+
 	publicRouter.AddRoute("GET", "/api_key/verify", controller_api_key.Verify_GetRequest)
 
+	// Private service for internal communication
 	privateRouter := kbrouter.NewRouter()
-	privateRouter.AddRoute("GET", "/swagger", func(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
-		absPath, err := filepath.Abs("../swagger/index.html")
-		if err != nil {
-			res.SetStatusCode(400).SendString(fmt.Sprintf("Error getting absolute path: %v", err))
-			return
-		}
-		res.SetHeader("Content-Type", "text/html")
-		res.SendFile(absPath)
-	})
-	privateRouter.AddRoute("GET", "/swagger/swagger.yaml", func(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
-		absPath, err := filepath.Abs("../swagger/swagger.yaml")
-		if err != nil {
-			res.SetStatusCode(400).SendString(fmt.Sprintf("Error getting absolute path: %v", err))
-			return
-		}
-		res.SetHeader("Content-Type", "application/x-yaml")
-		res.SendFile(absPath)
-	})
+	privateRouter.AddHealthRoute("/healthz")
+
+	swagger := controller_swagger.CreateSwaggerRouter()
+	privateRouter.AddSubRouter("/swagger", swagger)
 
 	app := &App{
 		PublicRouter:  publicRouter,

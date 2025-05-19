@@ -6,9 +6,10 @@ import (
 )
 
 type KBRequest struct {
-	httpReq *http.Request
-	Host    string
-	Path    string
+	httpReq  *http.Request
+	Host     string
+	CurrPath string
+	Path     string
 }
 
 func (req *KBRequest) GetHeader(key string) []string {
