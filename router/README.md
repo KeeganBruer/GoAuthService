@@ -1,6 +1,6 @@
 # KBRouter
 
-A HTTP Router in go
+A HTTP Router written in GoLang
 
 ## Usage
 #### Define A Route Handler
