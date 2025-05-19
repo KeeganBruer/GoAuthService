@@ -98,9 +98,30 @@ func (query *SQLQuery) Where(condition string) *SQLQuery {
 	return query
 }
 
-func (query *SQLQuery) FindAll() {
+func (query *SQLQuery) FindAll(EachCB func(get func(dest ...any) error) error) error {
 	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)
 	fmt.Println(statement)
+	rows, err := query.table.builder.db_conn.Query(statement)
+	if err != nil {
+		return fmt.Errorf("query error %v", err)
+	}
+	defer rows.Close()
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		err := EachCB(func(dest ...any) error {
+			if err := rows.Scan(dest...); err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("albumsByArtist %v", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("albumsByArtist %v", err)
+	}
+	return nil
 }
 func (query *SQLQuery) FindOne(dest ...any) error {
 	statement := fmt.Sprintf("SELECT * FROM %s WHERE %s;", query.table.tableName, query.whereCondition)

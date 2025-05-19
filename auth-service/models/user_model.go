@@ -16,15 +16,21 @@ func NewUser() *User {
 	m := &User{}
 	return m
 }
-func GetUserByID(id int) *User {
+func GetUserByID(id int) (*User, error) {
 	db_conn := GetDBConnection()
 	q := db_conn.GetTable("users").NewSelect()
 	q.Where(fmt.Sprintf("id = %d", id))
 
 	user := &User{}
-	q.FindOne(&user)
-
-	return user
+	err := q.FindOne(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 func GetUserByUsername(name string) (*User, error) {
 	db_conn := GetDBConnection()

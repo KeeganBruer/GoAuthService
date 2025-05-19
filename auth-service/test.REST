@@ -19,3 +19,6 @@ content-type: application/json
     "username":"keegan",
     "password":"temp_pass"
 }
+###
+GET http://localhost:8080/verify HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NDUyOTMsImlzcyI6IiIsInN1YiI6ImtlZWdhbiJ9.tU2aPbr47I-3w79Ndw_P2Grp35I9ei-r0-MD2fuMB9g

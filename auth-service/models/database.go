@@ -19,7 +19,7 @@ func ConnectDB() {
 	cfg.Net = "tcp"
 	cfg.Addr = os.Getenv("DBAdrs")
 	cfg.DBName = os.Getenv("DBName")
-	fmt.Println(cfg.FormatDSN())
+
 	builder = sqlquerybuilder.NewSQLQueryBuilder()
 	builder.Connect(cfg)
 

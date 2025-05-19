@@ -2,7 +2,6 @@ package jwttokens
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -54,7 +53,6 @@ func DecodeToken(tokenString string) (*TokenData, error) {
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 

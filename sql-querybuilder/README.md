@@ -1,8 +1,15 @@
 # SQL Query Builder
 
 ```golang
+cfg := mysql.NewConfig()
+cfg.User = os.Getenv("DBUser")
+cfg.Passwd = os.Getenv("DBPass")
+cfg.Net = "tcp"
+cfg.Addr = os.Getenv("DBAdrs")
+cfg.DBName = os.Getenv("DBName")
+
 builder = sqlquerybuilder.NewSQLQueryBuilder()
-builder.Connect()
+builder.Connect(cfg)
 
 //define user table
 userTable := builder.NewTable("users")
@@ -23,7 +30,21 @@ q.Send()
 
 q := builder.GetTable("users").NewSelect()
 q.Where(fmt.Sprintf("username = %s", name))
+
+//Find One
 user := &User{}
 q.FindOne(&user)
 
+//Find All
+var users []*User
+q.FindAll(func(get func(dest ...any) error) error {
+    user := &User{}
+    err := get(
+        &user.ID,
+        &user.Username,
+        &user.Password,
+    )
+    users = append(users, user)
+    return err
+})
 ```
