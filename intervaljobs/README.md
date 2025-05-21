@@ -6,13 +6,17 @@ Schedule re-occuring tasks on an interval schedule, i.e. every 30 minutes.
 IntervalJobs := intervaljobs.NewIntervalJobManager(intervaljobs.ManagerConfigs{
     Interval: 1 * time.Minute, //check jobs every minute
 })
-IntervalJobs.AddJob(
-    &intervaljobs.IntervalJobTime{
-        Min: 10, //run every 10 min
+IntervalJobs.AddJob(intervaljobs.JobConfig{
+    // run 5 minutes after startup, then every hour
+    Interval: &intervaljobs.IntervalJobTime{
+        Hr: 1,
     },
-    func() {
+    Offset: &intervaljobs.IntervalJobTime{
+        Min: 5, 
+    },
+    Handler: func() {
         // ... tasks ...
     },
-)
+})
 go IntervalJobs.Start()
 ```
