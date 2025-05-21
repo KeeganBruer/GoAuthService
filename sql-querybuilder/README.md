@@ -45,11 +45,15 @@ q.Where(fmt.Sprintf("username = %s", name))
 
 //Find One
 user := &User{}
-q.FindOne(&user)
+err := q.FindOne(
+    &user.ID,
+    &user.Username,
+    &user.Password,
+)
 
 //Find All
 var users []*User
-q.FindAll(func(get func(dest ...any) error) error {
+err := q.FindAll(func(get func(dest ...any) error) error {
     user := &User{}
     err := get(
         &user.ID,

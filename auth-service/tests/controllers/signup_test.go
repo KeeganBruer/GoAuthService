@@ -7,7 +7,7 @@ import (
 )
 
 func TestSignup(t *testing.T) {
-
+	router := app.PublicRouter
 	TargetUsername := "Test User"
 
 	//Create Request Details

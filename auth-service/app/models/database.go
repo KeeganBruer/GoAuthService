@@ -9,9 +9,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var builder *sqlquerybuilder.SQLQueryBuilder
+type Models struct {
+	builder *sqlquerybuilder.SQLQueryBuilder
+}
 
-func ConnectDB() {
+func ConnectDB() *Models {
 	fmt.Println("Connecting to database")
 	cfg := mysql.NewConfig()
 	cfg.User = os.Getenv("DBUser")
@@ -19,12 +21,12 @@ func ConnectDB() {
 	cfg.Net = "tcp"
 	cfg.Addr = os.Getenv("DBAdrs")
 	//cfg.DBName = os.Getenv("DBName")
-
-	builder = sqlquerybuilder.NewSQLQueryBuilder()
+	builder := sqlquerybuilder.NewSQLQueryBuilder()
 	builder.Connect(cfg)
 	builder.UseDatabase(os.Getenv("DBName"))
 	DefineTables(builder)
-}
-func GetDBConnection() *sqlquerybuilder.SQLQueryBuilder {
-	return builder
+	models := &Models{
+		builder: builder,
+	}
+	return models
 }

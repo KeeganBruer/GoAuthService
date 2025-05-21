@@ -1,17 +1,14 @@
 openapi: 3.0.3
 info:
   title: GoAuthService - OpenAPI 3.0
-  description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
-  contact:
-    email: apiteam@swagger.io
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.1
+  description: |-
+    An open-source authorization micro-service with SSO support.
+  contact:
+    email: inquire@keeganbruer.com
 externalDocs:
-  description: Find out more about Swagger
-  url: http://swagger.io
+  description: View Github
+  url: https://github.com/KeeganBruer/GoAuthService
 servers:
   - url: http://localhost:3000/
 tags:
@@ -29,12 +26,6 @@ paths:
         description: Create a new pet in the store
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-          application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/LoginRequest'
         required: true

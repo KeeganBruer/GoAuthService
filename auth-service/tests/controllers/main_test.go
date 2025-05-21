@@ -2,14 +2,13 @@ package controller_tests
 
 import (
 	controllers "go-auth-service/controllers"
-	"kbrouter"
 	"testing"
 )
 
-var router *kbrouter.Router
+var app *controllers.App
 
 func TestMain(m *testing.M) {
-	router = controllers.CreateApp()
+	app = controllers.CreateApp()
 	m.Run()
 
 }

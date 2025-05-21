@@ -1,7 +1,7 @@
-package controller_api_key
+package controller_token
 
 import (
-	"go-auth-service/services/jwttokens"
+	"go-auth-service/app/services/jwttokens"
 	"kbrouter"
 	"strings"
 
@@ -14,7 +14,7 @@ type VerifyResponse struct {
 }
 
 // Post Request to the login endpoint
-func Verify_GetRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
+func (controller *TokenController) Verify_GetRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	authorization := req.GetHeader("Authorization")[0]
 	authorization = strings.Replace(authorization, "Bearer ", "", 1)
 	token, err := jwttokens.DecodeToken(authorization)

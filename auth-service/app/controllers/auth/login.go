@@ -1,7 +1,7 @@
-package controller_login
+package auth_controller
 
 import (
-	"go-auth-service/models"
+	"go-auth-service/app/models"
 	"kbrouter"
 )
 
@@ -15,11 +15,12 @@ type LoginResponse struct {
 }
 
 // Post Request to the login endpoint
-func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
+func (controller *AuthController) Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body LoginRequest
 	req.ParseBodyJSON(&body)
 
-	user, err := models.GetUserByUsername(body.Username)
+	UserModel := controller.Models.GetUserModel()
+	user, err := UserModel.GetUserByUsername(body.Username)
 	if err != nil {
 		res.SetStatusCode(404).SendString("Could not find user")
 		return
@@ -28,7 +29,9 @@ func Login_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 		res.SetStatusCode(401).SendString("Incorrect password")
 		return
 	}
-	session := models.CreateOrGetSession(&models.NewSession{
+
+	SessionModel := controller.Models.GetSessionModel()
+	session := SessionModel.CreateOrGetSession(&models.NewSession{
 		UserID: user.ID,
 	})
 

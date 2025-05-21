@@ -2,30 +2,43 @@ package models
 
 import (
 	"fmt"
-	"go-auth-service/services/jwttokens"
+	"go-auth-service/app/services/jwttokens"
 	"time"
 )
 
 const TOKEN_TIME = 30
 const REFRESH_TIME = 60
 
+type SessionModel struct {
+	models *Models
+}
+
+func (models *Models) GetSessionModel() *SessionModel {
+	return &SessionModel{
+		models: models,
+	}
+}
+
 type NewSession struct {
 	UserID int
 }
 type Session struct {
+	models     *SessionModel
 	ID         int
 	UserID     int       `json:"user_id"`
 	Experation time.Time `json:"experation"`
 }
 
-func GetSessionByUserID(userID int) (*Session, error) {
-	db_conn := GetDBConnection()
-	q := db_conn.GetTable("sessions").NewSelect()
+func (SessionModel *SessionModel) GetSessionByUserID(userID int) (*Session, error) {
+	builder := SessionModel.models.builder
+	q := builder.GetTable("sessions").NewSelect()
 	q.Where(fmt.Sprintf("user_id = %d", userID))
 
 	var dateTime string
 
-	existing := &Session{}
+	existing := &Session{
+		models: SessionModel,
+	}
 
 	err := q.FindOne(
 		&existing.ID,
@@ -43,14 +56,15 @@ func GetSessionByUserID(userID int) (*Session, error) {
 	fmt.Println("dateTime: " + existing.Experation.Format(time.Kitchen))
 	return existing, err
 }
-func CreateOrGetSession(data *NewSession) *Session {
+func (SessionModel *SessionModel) CreateOrGetSession(data *NewSession) *Session {
 	exp := time.Now().Add(time.Duration(REFRESH_TIME) * time.Minute)
 	session := &Session{
+		models:     SessionModel,
 		UserID:     data.UserID,
 		Experation: exp,
 	}
 
-	existing, err := GetSessionByUserID(session.UserID)
+	existing, err := SessionModel.GetSessionByUserID(session.UserID)
 
 	if err != nil {
 		session.Save()
@@ -94,15 +108,15 @@ func (session *Session) GetTokens() (*SessionTokens, error) {
 	}, nil
 }
 func (session *Session) Save() error {
-	db_conn := GetDBConnection()
-	new := db_conn.GetTable("sessions").NewInsert()
+	builder := session.models.models.builder
+	new := builder.GetTable("sessions").NewInsert()
 	new.AddIntColumn("id", session.ID)
 	new.AddIntColumn("user_id", session.UserID)
 	new.AddDateTimeColumn("experation", session.Experation)
 	new.Send()
 	if session.ID == 0 {
 		//Load the ID for the inserted session
-		q := db_conn.GetTable("sessions").NewSelect()
+		q := builder.GetTable("sessions").NewSelect()
 		q.Where(fmt.Sprintf("user_id = %d", session.UserID))
 		var dateTime string
 		err := q.FindOne(
@@ -122,12 +136,14 @@ func (session *Session) Save() error {
 	return nil
 }
 
-func GetSessionFromToken(token *jwttokens.TokenData) (*Session, error) {
-	db_conn := GetDBConnection()
-	q := db_conn.GetTable("sessions").NewSelect()
+func (SessionModel *SessionModel) GetSessionFromToken(token *jwttokens.TokenData) (*Session, error) {
+	builder := SessionModel.models.builder
+	q := builder.GetTable("sessions").NewSelect()
 	q.Where(fmt.Sprintf("id = %d", token.SessionID))
 	var dateTime string
-	session := &Session{}
+	session := &Session{
+		models: SessionModel,
+	}
 	err := q.FindOne(
 		&session.ID,
 		&session.UserID,

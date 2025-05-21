@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-type RouteHandler = func(req *KBRequest, res *KBResponse)
+type KBRouteHandler = func(req *KBRequest, res *KBResponse)
 
 type Router struct {
-	middlewares []RouteHandler
-	routes      map[string]map[string]RouteHandler
+	middlewares []KBRouteHandler
+	routes      map[string]map[string]KBRouteHandler
 	subRouters  map[string]*Router
 }
 
@@ -20,10 +20,10 @@ type HealthzResponse struct {
 
 // Create a new kbrouter
 func NewRouter() *Router {
-	middleware := &[]RouteHandler{}
+	middleware := &[]KBRouteHandler{}
 	router := &Router{
 		middlewares: *middleware,
-		routes:      make(map[string]map[string]RouteHandler),
+		routes:      make(map[string]map[string]KBRouteHandler),
 		subRouters:  make(map[string]*Router),
 	}
 
@@ -35,6 +35,10 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
 }
 func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basepath string) {
 	CurrPath := strings.Replace(httpReq.URL.Path, basepath, "", 1)
+	//Empty route should map to the / route
+	if CurrPath == "" {
+		CurrPath = "/"
+	}
 	req := &KBRequest{
 		httpReq:  httpReq,
 		Host:     httpReq.URL.Host,
@@ -42,9 +46,8 @@ func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basep
 		Path:     httpReq.URL.Path,
 	}
 	splitPath := strings.Split(req.CurrPath, "/")
-	res := &KBResponse{
-		writer: w,
-	}
+	res := NewKBResponse(w)
+
 	if httpReq.Method == "OPTIONS" {
 		res.SetHeader("Allow", "*")
 		res.SetHeader("Access-Control-Allow-Credentials", "true")
@@ -59,15 +62,11 @@ func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basep
 	for i := range r.middlewares {
 		middleware := r.middlewares[i]
 		middleware(req, res)
+		if !res.IsOpen {
+			return
+		}
 	}
 
-	subPath := fmt.Sprintf("/%s", splitPath[1])
-	//Check for sub routers
-	if r.subRouters[subPath] != nil {
-		fullPath := fmt.Sprintf("%s%s", basepath, subPath)
-		r.subRouters[subPath].HandleServe(w, httpReq, fullPath)
-		return
-	}
 	//Handle this router's routes
 	if handlers, ok := r.routes[req.CurrPath]; ok {
 		if handler, methodExists := handlers[httpReq.Method]; methodExists {
@@ -75,6 +74,18 @@ func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basep
 			return
 		}
 	}
+
+	subPath := "/"
+	if len(splitPath) > 1 {
+		subPath = fmt.Sprintf("/%s", splitPath[1])
+	}
+	//Check for sub routers
+	if r.subRouters[subPath] != nil {
+		fullPath := fmt.Sprintf("%s%s", basepath, subPath)
+		r.subRouters[subPath].HandleServe(w, httpReq, fullPath)
+		return
+	}
+
 	http.NotFound(w, httpReq)
 }
 
@@ -89,14 +100,14 @@ func (r *Router) Listen(port int, cb func(port int)) error {
 	return server.ListenAndServe()
 }
 
-func (r *Router) AddMiddleware(handlers ...RouteHandler) {
+func (r *Router) AddMiddleware(handlers ...KBRouteHandler) {
 	r.middlewares = append(r.middlewares, handlers...)
 }
 
 // Add a route to the router
-func (r *Router) AddRoute(method, path string, handlers ...RouteHandler) {
+func (r *Router) AddRoute(method, path string, handlers ...KBRouteHandler) {
 	if r.routes[path] == nil {
-		r.routes[path] = make(map[string]RouteHandler)
+		r.routes[path] = make(map[string]KBRouteHandler)
 	}
 	if len(handlers) > 1 {
 		r.routes[path][method] = func(req *KBRequest, res *KBResponse) {

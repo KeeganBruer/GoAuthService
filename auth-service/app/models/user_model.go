@@ -6,22 +6,37 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserModel struct {
+	models *Models
+}
+
+func (models *Models) GetUserModel() *UserModel {
+	return &UserModel{
+		models: models,
+	}
+}
+
 type User struct {
+	models   *UserModel
 	ID       int
 	Username string
 	Password string
 }
 
-func NewUser() *User {
-	m := &User{}
+func (userModel *UserModel) NewUser() *User {
+	m := &User{
+		models: userModel,
+	}
 	return m
 }
-func GetUserByID(id int) (*User, error) {
-	db_conn := GetDBConnection()
-	q := db_conn.GetTable("users").NewSelect()
+func (userModel *UserModel) GetUserByID(id int) (*User, error) {
+	builder := userModel.models.builder
+	q := builder.GetTable("users").NewSelect()
 	q.Where(fmt.Sprintf("id = %d", id))
 
-	user := &User{}
+	user := &User{
+		models: userModel,
+	}
 	err := q.FindOne(
 		&user.ID,
 		&user.Username,
@@ -32,12 +47,14 @@ func GetUserByID(id int) (*User, error) {
 	}
 	return user, nil
 }
-func GetUserByUsername(name string) (*User, error) {
-	db_conn := GetDBConnection()
-	q := db_conn.GetTable("users").NewSelect()
+func (userModel *UserModel) GetUserByUsername(name string) (*User, error) {
+	builder := userModel.models.builder
+	q := builder.GetTable("users").NewSelect()
 	q.Where(fmt.Sprintf("username = \"%s\"", name))
 
-	user := &User{}
+	user := &User{
+		models: userModel,
+	}
 	err := q.FindOne(
 		&user.ID,
 		&user.Username,
@@ -63,8 +80,8 @@ func (user *User) CheckPassword(password string) bool {
 }
 func (user *User) Save() {
 	fmt.Println("Adding new user to database")
-	db_conn := GetDBConnection()
-	q := db_conn.GetTable("users").NewInsert()
+	builder := user.models.models.builder
+	q := builder.GetTable("users").NewInsert()
 
 	//Add data to insert statement
 	q.AddIntColumn("id", user.ID)

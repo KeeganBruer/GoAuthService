@@ -1,7 +1,7 @@
 package controller_token
 
 import (
-	"go-auth-service/services/jwttokens"
+	"go-auth-service/app/services/jwttokens"
 	"kbrouter"
 )
 
@@ -14,7 +14,7 @@ type RefreshResponse struct {
 }
 
 // Post Request to the login endpoint
-func Refresh_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
+func (controller *TokenController) Refresh_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body RefreshRequest
 	req.ParseBodyJSON(&body)
 

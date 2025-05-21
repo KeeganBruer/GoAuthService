@@ -1,7 +1,6 @@
-package controller_signup
+package auth_controller
 
 import (
-	"go-auth-service/models"
 	"kbrouter"
 )
 
@@ -11,16 +10,17 @@ type SignupRequest struct {
 }
 
 // Post Request to the login endpoint
-func Signup_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
+func (controller *AuthController) Signup_PostRequest(req *kbrouter.KBRequest, res *kbrouter.KBResponse) {
 	var body SignupRequest
 	req.ParseBodyJSON(&body)
 
-	_, err := models.GetUserByUsername(body.Username)
+	UserModel := controller.Models.GetUserModel()
+	_, err := UserModel.GetUserByUsername(body.Username)
 	if err == nil {
 		res.SetStatusCode(409).SendString("User already exists")
 		return
 	}
-	user := models.NewUser()
+	user := UserModel.NewUser()
 	user.Username = body.Username
 	user.SetPassword(body.Password)
 	user.Save()

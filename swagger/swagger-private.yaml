@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: GoAuthService - OpenAPI 3.0
+  version: 1.0.1
+  description: |-
+    An open-source authorization micro-service with SSO support.
+  contact:
+    email: inquire@keeganbruer.com
+externalDocs:
+  description: View Github
+  url: https://github.com/KeeganBruer/GoAuthService
+servers:
+  - url: http://localhost:3001/
+tags:
+  - name: sessions
+    description: Get info about an active session
+paths:
+  /session/{sessionID}/verify:
+    get:
+      tags:
+        - sessions
+      summary: Verify that the session is active
+      description:  Verify that the session is active
+      operationId: session_verify
+      parameters:
+        - in: path
+          name: sessionID
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the session to get
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionInfo"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      
+components:
+  schemas:
+    SessionInfo:
+      type: object
+      properties:
+        id:
+          type: number
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+            username:
+              type: string
+      xml:
+        name: session_info
+    AuthTokens:
+      type: object
+      properties:
+        token:
+          type: string
+        refresh:
+          type: string
+      xml:
+        name: login_request
+    Error:
+      type: string
+      xml:
+        name: error
+    
