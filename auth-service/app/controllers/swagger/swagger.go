@@ -26,7 +26,20 @@ func InitController(CONFIGS *configs.AppConfigs, models *models.Models, isPrivat
 			AppConfigs: CONFIGS,
 		},
 	}
-
+	if isPrivate && CONFIGS.IsDev {
+		fmt.Printf(
+			"\x1b]8;;http://localhost:%d/swagger\x07%s\x1b]8;;\x07\u001b[0m\n",
+			CONFIGS.ExternalPorts.PrivatePort,
+			"Open Swagger Documentation",
+		)
+	} else if !isPrivate && !CONFIGS.IsDev {
+		fmt.Printf(
+			"\x1b]8;;http://localhost:%d/swagger\x07%s\x1b]8;;\x07\u001b[0m\n",
+			CONFIGS.ExternalPorts.PublicPort,
+			"Open Swagger Documentation",
+		)
+	}
+	//
 	router.AddRoute("GET", "/", SendSwaggerUI("/swagger-public.yaml", false))
 	router.AddRoute("GET", "/swagger-public.yaml", middleware.ServeStaticFile("../swagger/swagger-public.yaml"))
 	if isPrivate {

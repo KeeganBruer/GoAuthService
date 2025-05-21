@@ -16,8 +16,7 @@ type App struct {
 	PrivateRouter *kbrouter.Router
 }
 
-func CreateApp() *App {
-	CONFIGS := configs.NewAppConfigs()
+func CreateApp(CONFIGS *configs.AppConfigs) *App {
 	//Setup database connection
 	models := models.ConnectDB(CONFIGS.Database)
 
@@ -45,9 +44,9 @@ func CreateApp() *App {
 	return app
 }
 
-func (app *App) Listen(port int, cb func(port int)) error {
-	go app.PrivateRouter.Listen(port+1, cb)
-	app.PublicRouter.Listen(port, cb)
+func (app *App) Listen(ports configs.Ports, cb func(port int)) error {
+	go app.PrivateRouter.Listen(ports.PrivatePort, cb)
+	app.PublicRouter.Listen(ports.PublicPort, cb)
 	return nil
 }
 func AttachControllers(router *kbrouter.Router, controllers ...*controllers.Controller) {
