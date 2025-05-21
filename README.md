@@ -9,7 +9,7 @@ This project includes multiple components, including the base micro-service and 
 | [auth-service](./auth-service/README.md)          | An Authorization micro-service
 | [router](./router/README.md)                      | A HTTP Router written in GoLang
 | [sql-querybuilder](./sql-querybuilder/README.md)  | A SQL Query Builder written in GoLang
-| [intervaljobs](./intervaljobs/README.md)          | A SQL Query Builder written in GoLang
+| [intervaljobs](./intervaljobs/README.md)          | Schedule re-occuring tasks on an interval schedule
 | [swagger](./swagger/swagger.yaml)                 | SwaggerDocs for the micro-service
 
 ## Demo
