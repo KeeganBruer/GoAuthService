@@ -1,11 +1,9 @@
-package controller_token
+package token_controller
 
 import (
 	"go-auth-service/app/services/jwttokens"
 	"kbrouter"
 	"strings"
-
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type VerifyResponse struct {
@@ -19,12 +17,12 @@ func (controller *TokenController) Verify_GetRequest(req *kbrouter.KBRequest, re
 	authorization = strings.Replace(authorization, "Bearer ", "", 1)
 	token, err := jwttokens.DecodeToken(authorization)
 	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			res.SetStatusCode(400).SendString("Token Expired")
-			return
-		}
 		res.SetStatusCode(400).SendString("Error decoding token " + err.Error())
 		return
 	}
+	// if token.Type != "session" {
+	// 	res.SetStatusCode(400).SendString("Not a session token")
+	// 	return
+	// }
 	res.SendJSON(token)
 }

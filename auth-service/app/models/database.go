@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"os"
 	"sqlquerybuilder"
 
 	"github.com/go-sql-driver/mysql"
@@ -12,18 +11,32 @@ import (
 type Models struct {
 	builder *sqlquerybuilder.SQLQueryBuilder
 }
+type BaseModel struct {
+	models *Models
+}
 
-func ConnectDB() *Models {
+func (model *BaseModel) GetDBQueryBuilder() *sqlquerybuilder.SQLQueryBuilder {
+	return model.models.builder
+}
+
+type DBConnection struct {
+	User   string
+	Passwd string
+	Addr   string
+	Name   string
+}
+
+func ConnectDB(connConfig DBConnection) *Models {
 	fmt.Println("Connecting to database")
 	cfg := mysql.NewConfig()
-	cfg.User = os.Getenv("DBUser")
-	cfg.Passwd = os.Getenv("DBPass")
+	cfg.User = connConfig.User
+	cfg.Passwd = connConfig.Passwd
 	cfg.Net = "tcp"
-	cfg.Addr = os.Getenv("DBAdrs")
-	//cfg.DBName = os.Getenv("DBName")
+	cfg.Addr = connConfig.Addr
+
 	builder := sqlquerybuilder.NewSQLQueryBuilder()
 	builder.Connect(cfg)
-	builder.UseDatabase(os.Getenv("DBName"))
+	builder.UseDatabase(connConfig.Name)
 	DefineTables(builder)
 	models := &Models{
 		builder: builder,

@@ -7,17 +7,19 @@ import (
 )
 
 type UserModel struct {
-	models *Models
+	BaseModel
 }
 
 func (models *Models) GetUserModel() *UserModel {
 	return &UserModel{
-		models: models,
+		BaseModel{
+			models: models,
+		},
 	}
 }
 
 type User struct {
-	models   *UserModel
+	BaseModel
 	ID       int
 	Username string
 	Password string
@@ -25,17 +27,21 @@ type User struct {
 
 func (userModel *UserModel) NewUser() *User {
 	m := &User{
-		models: userModel,
+		BaseModel: BaseModel{
+			models: userModel.models,
+		},
 	}
 	return m
 }
 func (userModel *UserModel) GetUserByID(id int) (*User, error) {
-	builder := userModel.models.builder
+	builder := userModel.GetDBQueryBuilder()
 	q := builder.GetTable("users").NewSelect()
 	q.Where(fmt.Sprintf("id = %d", id))
 
 	user := &User{
-		models: userModel,
+		BaseModel: BaseModel{
+			models: userModel.models,
+		},
 	}
 	err := q.FindOne(
 		&user.ID,
@@ -48,12 +54,14 @@ func (userModel *UserModel) GetUserByID(id int) (*User, error) {
 	return user, nil
 }
 func (userModel *UserModel) GetUserByUsername(name string) (*User, error) {
-	builder := userModel.models.builder
+	builder := userModel.GetDBQueryBuilder()
 	q := builder.GetTable("users").NewSelect()
 	q.Where(fmt.Sprintf("username = \"%s\"", name))
 
 	user := &User{
-		models: userModel,
+		BaseModel: BaseModel{
+			models: userModel.models,
+		},
 	}
 	err := q.FindOne(
 		&user.ID,
@@ -80,13 +88,13 @@ func (user *User) CheckPassword(password string) bool {
 }
 func (user *User) Save() {
 	fmt.Println("Adding new user to database")
-	builder := user.models.models.builder
+	builder := user.GetDBQueryBuilder()
 	q := builder.GetTable("users").NewInsert()
 
 	//Add data to insert statement
-	q.AddIntColumn("id", user.ID)
-	q.AddStringColumn("username", user.Username)
-	q.AddStringColumn("password", user.Password)
+	q.AddColumn("id", builder.Int2DB(user.ID))
+	q.AddColumn("username", builder.String2DB(user.Username))
+	q.AddColumn("password", builder.String2DB(user.Password))
 
 	q.Send()
 }

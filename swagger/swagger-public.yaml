@@ -14,8 +14,10 @@ servers:
 tags:
   - name: user
     description: Operations about user
+  - name: token
+    description: Operations about session tokens
 paths:
-  /login:
+  /auth/login:
     post:
       tags:
         - user
@@ -54,10 +56,138 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      
+  /auth/signup:
+    post:
+      tags:
+        - user
+      summary: Register a new User
+      description: Register a new User
+      operationId: signup
+      requestBody:
+        description: New User info
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        '401':
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Could not find user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /token/verify:
+    get:
+      tags:
+        - token
+      summary: Register a new User
+      description: Register a new User
+      operationId: verify_token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        '401':
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Could not find user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /token/refresh:
+    post:
+      tags:
+        - token
+      summary: Refresh an expired token using the paired refresh token
+      description: Refresh an expired token using the paired refresh token
+      operationId: token_refresh
+      requestBody:
+        description: New User info
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        '401':
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Could not find user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $r
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      xml:
+        name: login_request
+    SignupRequest:
       type: object
       properties:
         username:
@@ -75,6 +205,10 @@ components:
           type: string
       xml:
         name: login_request
+    Message:
+      type: string
+      xml:
+        name: message
     Error:
       type: string
       xml:

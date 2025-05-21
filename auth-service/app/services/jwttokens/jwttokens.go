@@ -10,12 +10,14 @@ import (
 )
 
 type NewTokenData struct {
-	SessionID     int
+	Type          string
+	ID            int
 	MinutesTilExp int
 }
 type TokenData struct {
 	Expiration time.Time
-	SessionID  int
+	Type       string
+	ID         int
 }
 
 // Create a JWT token with the given data
@@ -31,12 +33,14 @@ func CreateToken(data *NewTokenData) (string, error) {
 		minutes = 60
 	}
 	exp := time.Now().Add(time.Duration(minutes) * time.Minute)
-
+	Type := data.Type
+	Sub := fmt.Sprintf("%d", data.ID)
 	//Construct JWT claims
 	claims := jwt.MapClaims{
-		"iss": ServerName,
-		"sub": fmt.Sprintf("%d", data.SessionID),
-		"exp": exp.Unix(),
+		"iss":  ServerName,
+		"type": Type,
+		"sub":  Sub,
+		"exp":  exp.Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -67,14 +71,16 @@ func DecodeToken(tokenString string) (*TokenData, error) {
 	//Construct Token data from claims
 	exp, _ := claims.GetExpirationTime()
 	sub, _ := claims.GetSubject()
+	Type := fmt.Sprintf("%v", claims["type"])
 
-	SessionID, err := strconv.Atoi(sub)
+	ID, err := strconv.Atoi(sub)
 	if err != nil {
 		return nil, err
 	}
 	data := &TokenData{
 		Expiration: exp.Time,
-		SessionID:  SessionID,
+		Type:       Type,
+		ID:         ID,
 	}
 	return data, nil
 }

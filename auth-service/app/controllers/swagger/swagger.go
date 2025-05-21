@@ -2,6 +2,7 @@ package swagger_controller
 
 import (
 	"fmt"
+	"go-auth-service/app/configs"
 	"go-auth-service/app/controllers"
 	"go-auth-service/app/middleware"
 	"go-auth-service/app/models"
@@ -15,13 +16,14 @@ type SwaggerController struct {
 	controllers.Controller
 }
 
-func InitController(models *models.Models, isPrivate bool) *controllers.Controller {
+func InitController(CONFIGS *configs.AppConfigs, models *models.Models, isPrivate bool) *controllers.Controller {
 	router := kbrouter.NewRouter()
 	controller := &SwaggerController{
 		controllers.Controller{
-			Path:   "/swagger",
-			Models: models,
-			Router: router,
+			Path:       "/swagger",
+			Models:     models,
+			Router:     router,
+			AppConfigs: CONFIGS,
 		},
 	}
 

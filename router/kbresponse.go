@@ -3,6 +3,7 @@ package kbrouter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -52,6 +53,17 @@ func (res *KBResponse) SendJSON(resval any) error {
 		res.SetHeader("Content-Type", "application/json")
 	}
 	json.NewEncoder(res.writer).Encode(resval)
+	return nil
+}
+func (res *KBResponse) SendJSONString(fmtStr string, vals ...any) error {
+	if !res.IsOpen {
+		return errors.New("response is closed")
+	}
+	if res.writer.Header().Get("Content-Type") == "" {
+		res.SetHeader("Content-Type", "application/json")
+	}
+	data := fmt.Sprintf(fmtStr, vals...)
+	res.writer.Write([]byte(data))
 	return nil
 }
 func (res *KBResponse) SendFile(filepath string) error {

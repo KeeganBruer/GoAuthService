@@ -1,4 +1,4 @@
-package controller_token
+package token_controller
 
 import (
 	"go-auth-service/app/services/jwttokens"
@@ -23,27 +23,27 @@ func (controller *TokenController) Refresh_PostRequest(req *kbrouter.KBRequest, 
 		res.SetStatusCode(400).SendString("Error decoding token")
 		return
 	}
-	//Create a pair of JWT tokens with different expirations
-	token, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		SessionID:     existing_token.SessionID,
-		MinutesTilExp: 30,
-	})
-	if err != nil {
-		res.SetStatusCode(400).SendString("Could not create token")
+	if existing_token.Type != "refresh_token" {
+		res.SetStatusCode(400).SendString("Token is not a session refresh token")
 		return
 	}
-	refreshToken, err := jwttokens.CreateToken(&jwttokens.NewTokenData{
-		SessionID:     existing_token.SessionID,
-		MinutesTilExp: 60,
-	})
+
+	SessionModel := controller.Models.GetSessionModel()
+	session, err := SessionModel.GetSessionByRefreshID(existing_token.ID)
 	if err != nil {
-		res.SetStatusCode(400).SendString("Could not create refresh token")
+		res.SetStatusCode(400).SendString("Could not find session")
 		return
 	}
+	tokens, err := session.GetTokens()
+	if err != nil {
+		res.SetStatusCode(400).SendString("Could not get session tokens")
+		return
+	}
+
 	//Construct and send response
 	resVal := &RefreshResponse{
-		Token:   token,
-		Refresh: refreshToken,
+		Token:   tokens.Token,
+		Refresh: tokens.Refresh,
 	}
 	res.SendJSON(resVal)
 }

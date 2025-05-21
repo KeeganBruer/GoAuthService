@@ -26,5 +26,5 @@ services:
       - JWTSecretToken=auth-server
       - DBUser=root
       - DBPass=example
-      - DBAdrs=db:3306
+      - DBAddr=db:3306
       - DBName=goauthservice

@@ -31,7 +31,7 @@ func (controller *AuthController) Login_PostRequest(req *kbrouter.KBRequest, res
 	}
 
 	SessionModel := controller.Models.GetSessionModel()
-	session := SessionModel.CreateOrGetSession(&models.NewSession{
+	session := SessionModel.CreateSession(&models.NewSession{
 		UserID: user.ID,
 	})
 

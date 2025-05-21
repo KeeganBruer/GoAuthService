@@ -34,24 +34,13 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, httpReq *http.Request) {
 	r.HandleServe(w, httpReq, "")
 }
 func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basepath string) {
-	CurrPath := strings.Replace(httpReq.URL.Path, basepath, "", 1)
-	//Empty route should map to the / route
-	if CurrPath == "" {
-		CurrPath = "/"
-	}
-	req := &KBRequest{
-		httpReq:  httpReq,
-		Host:     httpReq.URL.Host,
-		CurrPath: CurrPath,
-		Path:     httpReq.URL.Path,
-	}
-	splitPath := strings.Split(req.CurrPath, "/")
+	req := NewKBRequest(httpReq, basepath)
 	res := NewKBResponse(w)
 
+	res.SetHeader("Access-Control-Allow-Origin", "*")
 	if httpReq.Method == "OPTIONS" {
 		res.SetHeader("Allow", "*")
 		res.SetHeader("Access-Control-Allow-Credentials", "true")
-		res.SetHeader("Access-Control-Allow-Origin", "*")
 		res.SetHeader("Vary", "Origin")
 		res.SetHeader("Access-Control-Allow-Headers", "*")
 		res.SendString("OKAY")
@@ -67,8 +56,27 @@ func (r *Router) HandleServe(w http.ResponseWriter, httpReq *http.Request, basep
 		}
 	}
 
-	//Handle this router's routes
-	if handlers, ok := r.routes[req.CurrPath]; ok {
+	splitPath := strings.Split(req.CurrPath, "/")
+
+	for path, handlers := range r.routes {
+		trgPathSplit := strings.Split(path, "/")
+		doesMatch := true
+		for i := range trgPathSplit {
+			currPiece := splitPath[i]
+			trgPiece := trgPathSplit[i]
+			if strings.HasPrefix(trgPiece, "$") {
+				k := strings.Replace(trgPiece, "$", "", 1)
+				req.Parameters[k] = currPiece
+				continue
+			}
+			if currPiece == trgPiece {
+				continue
+			}
+			doesMatch = false
+		}
+		if !doesMatch {
+			continue
+		}
 		if handler, methodExists := handlers[httpReq.Method]; methodExists {
 			handler(req, res)
 			return

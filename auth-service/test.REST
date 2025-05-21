@@ -4,14 +4,14 @@ GET http://localhost:3000/healthz HTTP/1.1
 GET http://localhost:3001/swagger/test HTTP/1.1
 
 ###
-GET http://localhost:3001/healthz HTTP/1.1
+GET http://localhost:3001/session/2/info HTTP/1.1
 
 ###
 POST http://localhost:3000/login HTTP/1.1
 content-type: application/json
 
 {
-    "username":"keegan",
+    "username":"keegan2",
     "password":"temp_pass"
 }
 ###
@@ -19,7 +19,7 @@ POST http://localhost:3000/signup HTTP/1.1
 content-type: application/json
 
 {
-    "username":"keegan",
+    "username":"keegan2",
     "password":"temp_pass"
 }
 

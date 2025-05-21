@@ -1,9 +1,12 @@
 package main_app
 
 import (
+	"go-auth-service/app/configs"
 	"go-auth-service/app/controllers"
 	auth_controller "go-auth-service/app/controllers/auth"
+	session_controller "go-auth-service/app/controllers/session"
 	swagger_controller "go-auth-service/app/controllers/swagger"
+	token_controller "go-auth-service/app/controllers/token"
 	"go-auth-service/app/models"
 	"kbrouter"
 )
@@ -14,22 +17,25 @@ type App struct {
 }
 
 func CreateApp() *App {
-
+	CONFIGS := configs.NewAppConfigs()
 	//Setup database connection
-	models := models.ConnectDB()
+	models := models.ConnectDB(CONFIGS.Database)
 
 	// Setup public API
 	publicRouter := kbrouter.NewRouter()
 	publicRouter.AddHealthRoute("/healthz")
 	AttachControllers(publicRouter,
-		auth_controller.InitController(models),
-		swagger_controller.InitController(models, false),
+		swagger_controller.InitController(CONFIGS, models, false),
+		auth_controller.InitController(CONFIGS, models),
+		token_controller.InitController(CONFIGS, models),
 	)
 
+	// Setup internal API
 	privateRouter := kbrouter.NewRouter()
 	privateRouter.AddHealthRoute("/healthz")
 	AttachControllers(privateRouter,
-		swagger_controller.InitController(models, true),
+		swagger_controller.InitController(CONFIGS, models, true),
+		session_controller.InitController(CONFIGS, models),
 	)
 
 	app := &App{

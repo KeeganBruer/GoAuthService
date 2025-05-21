@@ -14,6 +14,7 @@ func DefineTables(builder *sqlquerybuilder.SQLQueryBuilder) {
 	//define api_key table
 	sessionTable := builder.NewTable("sessions")
 	sessionTable.DefineColumn("id", "INT AUTO_INCREMENT PRIMARY KEY")
+	sessionTable.DefineColumn("refresh_id", "INT")
 	sessionTable.DefineColumn("user_id", "INT NOT NULL")
 	sessionTable.DefineColumn("experation", "DATETIME NOT NULL")
 	sessionTable.EnsureTableExistsInDB()

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 	"time"
 
@@ -57,16 +58,18 @@ func (builder *SQLQueryBuilder) UseDatabase(dbName string) {
 
 // === SQL Table ===
 type SQLTable struct {
-	builder   *SQLQueryBuilder
-	tableName string
-	columns   map[string]string
+	builder     *SQLQueryBuilder
+	tableName   string
+	columns     map[string]string
+	columnOrder []string
 }
 
 func (builder *SQLQueryBuilder) NewTable(tableName string) *SQLTable {
 	table := &SQLTable{
-		builder:   builder,
-		tableName: tableName,
-		columns:   make(map[string]string),
+		builder:     builder,
+		tableName:   tableName,
+		columns:     make(map[string]string),
+		columnOrder: make([]string, 0),
 	}
 	return table
 }
@@ -77,13 +80,28 @@ func (builder *SQLQueryBuilder) GetTable(tableName string) *SQLTable {
 	table := builder.tables[tableName]
 	return table
 }
+func (builder *SQLQueryBuilder) Int2DB(num int) string {
+	return fmt.Sprintf("%d", num)
+}
+func (builder *SQLQueryBuilder) String2DB(str string) string {
+	return fmt.Sprintf("\"%s\"", str)
+}
+func (builder *SQLQueryBuilder) Date2DB(timeStmp time.Time) string {
+	dateTime := timeStmp.Format(time.DateTime)
+	return fmt.Sprintf("\"%s\"", dateTime)
+}
 
 func (table *SQLTable) DefineColumn(colName string, colType string) {
 	table.columns[colName] = colType
+	if !slices.Contains(table.columnOrder, colName) {
+		table.columnOrder = append(table.columnOrder, colName)
+	}
 }
 func (table *SQLTable) EnsureTableExistsInDB() {
 	colDef := ""
-	for k, v := range table.columns {
+	for i := range table.columnOrder {
+		k := table.columnOrder[i]
+		v := table.columns[k]
 		if colDef == "" {
 			colDef = fmt.Sprintf("%s %s", k, v)
 		} else {
@@ -161,6 +179,15 @@ func (query *SQLQuery) FindOne(dest ...any) error {
 	}
 	return nil
 }
+func (query *SQLQuery) Exists() bool {
+	statement := query.GetStatement()
+	fmt.Println("Checking Exists:", statement)
+	row := query.table.builder.db_conn.QueryRow(statement)
+	if err := row.Scan(nil); err != nil {
+		return false
+	}
+	return true
+}
 
 // === SQL Insert Methods ===
 type SQLInsert struct {
@@ -177,24 +204,16 @@ func (table *SQLTable) NewInsert() *SQLInsert {
 	return insert
 }
 
-func (insert *SQLInsert) AddIntColumn(column string, val int) {
-	insert.columns[column] = fmt.Sprintf("%d", val)
+func (insert *SQLInsert) AddColumn(column string, val string) {
+	insert.columns[column] = val
 }
-func (insert *SQLInsert) AddStringColumn(column string, val string) {
-	//wrap strings in quotes
-	//TODO sanatize string inputs
-	insert.columns[column] = fmt.Sprintf("\"%s\"", val)
-}
-func (insert *SQLInsert) AddDateTimeColumn(column string, val time.Time) {
-	//wrap strings in quotes
-	//TODO sanatize string inputs
-	dateTime := val.Format(time.DateTime)
-	insert.columns[column] = fmt.Sprintf("\"%s\"", dateTime)
-}
+
 func (insert *SQLInsert) GetStatement() string {
 	colDef := ""
 	colVal := ""
-	for k, v := range insert.table.columns {
+	for i := range insert.table.columnOrder {
+		k := insert.table.columnOrder[i]
+		v := insert.table.columns[k]
 		//If first item
 		if colDef == "" {
 			colDef = k
