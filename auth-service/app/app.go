@@ -8,12 +8,16 @@ import (
 	swagger_controller "go-auth-service/app/controllers/swagger"
 	token_controller "go-auth-service/app/controllers/token"
 	"go-auth-service/app/models"
+	timedjobs "go-auth-service/app/timed_jobs"
+	intervaljobs "intervaljobs"
 	"kbrouter"
+	"time"
 )
 
 type App struct {
 	PublicRouter  *kbrouter.Router
 	PrivateRouter *kbrouter.Router
+	IntervalJobs  *intervaljobs.IntervalJobManager
 }
 
 func CreateApp(CONFIGS *configs.AppConfigs) *App {
@@ -37,7 +41,21 @@ func CreateApp(CONFIGS *configs.AppConfigs) *App {
 		session_controller.InitController(CONFIGS, models),
 	)
 
+	IntervalJobs := intervaljobs.NewIntervalJobManager(intervaljobs.ManagerConfigs{
+		Interval: 30 * time.Minute,
+	})
+	IntervalJobs.AddJob(intervaljobs.JobConfig{
+		Interval: &intervaljobs.IntervalJobTime{
+			Hr: 1,
+		},
+		Offset: &intervaljobs.IntervalJobTime{
+			Min: 5,
+		},
+		Handler: timedjobs.CleanSessions,
+	})
+
 	app := &App{
+		IntervalJobs:  IntervalJobs,
 		PublicRouter:  publicRouter,
 		PrivateRouter: privateRouter,
 	}
@@ -45,6 +63,7 @@ func CreateApp(CONFIGS *configs.AppConfigs) *App {
 }
 
 func (app *App) Listen(ports configs.Ports, cb func(port int)) error {
+	go app.IntervalJobs.Start()
 	go app.PrivateRouter.Listen(ports.PrivatePort, cb)
 	app.PublicRouter.Listen(ports.PublicPort, cb)
 	return nil

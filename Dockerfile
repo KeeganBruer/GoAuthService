@@ -4,6 +4,9 @@ FROM golang:1.24
 WORKDIR /app/router
 COPY ./router/go.mod .
 
+WORKDIR /app/intervaljobs
+COPY ./intervaljobs/go.mod .
+
 WORKDIR /app/sql-querybuilder
 COPY ./sql-querybuilder/go.mod .
 
