@@ -32,8 +32,12 @@ func NewAppConfigs() *AppConfigs {
 		externalPorts.PublicPort, _ = strconv.Atoi(ports[0])
 		externalPorts.PrivatePort, _ = strconv.Atoi(ports[1])
 	}
+	IsDev := false
+	if os.Getenv("IsDev") == "true" {
+		IsDev = true
+	}
 	configs := &AppConfigs{
-		IsDev: false,
+		IsDev: IsDev,
 		Database: models.DBConnection{
 			User:   os.Getenv("DBUser"),
 			Passwd: os.Getenv("DBPass"),
