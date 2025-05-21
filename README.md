@@ -19,7 +19,6 @@ To get started, clone this repo and run the following command in the root direct
 ```bash
 docker compose up
 ```
-"\x1b]8;;https://keeganbruer.com\x07KeeganBruer\x1b]8;;\x07\u001b[0m"
 
 You can then use the /swagger endpoint on the private server to access a SwaggerUI page
 ```
