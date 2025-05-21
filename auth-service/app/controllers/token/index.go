@@ -10,10 +10,11 @@ type TokenController struct {
 	controllers.Controller
 }
 
-func InitController(models *models.Models) *TokenController {
+func InitController(models *models.Models) *controllers.Controller {
 	router := kbrouter.NewRouter()
 	controller := &TokenController{
 		controllers.Controller{
+			Path:   "/token",
 			Models: models,
 			Router: router,
 		},
@@ -22,5 +23,5 @@ func InitController(models *models.Models) *TokenController {
 	router.AddRoute("GET", "/verify", controller.Verify_GetRequest)
 	router.AddRoute("POST", "/refresh", controller.Refresh_PostRequest)
 
-	return controller
+	return &controller.Controller
 }

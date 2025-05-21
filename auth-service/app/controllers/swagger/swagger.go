@@ -15,10 +15,11 @@ type SwaggerController struct {
 	controllers.Controller
 }
 
-func InitController(models *models.Models, isPrivate bool) *SwaggerController {
+func InitController(models *models.Models, isPrivate bool) *controllers.Controller {
 	router := kbrouter.NewRouter()
 	controller := &SwaggerController{
 		controllers.Controller{
+			Path:   "/swagger",
 			Models: models,
 			Router: router,
 		},
@@ -33,7 +34,7 @@ func InitController(models *models.Models, isPrivate bool) *SwaggerController {
 		router.AddRoute("GET", "/swagger-private.yaml", middleware.ServeStaticFile("../swagger/swagger-private.yaml"))
 	}
 
-	return controller
+	return &controller.Controller
 }
 
 func SendSwaggerUI(yamlFile string, backButton bool) kbrouter.KBRouteHandler {

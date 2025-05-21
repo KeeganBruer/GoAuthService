@@ -10,10 +10,11 @@ type AuthController struct {
 	controllers.Controller
 }
 
-func InitController(models *models.Models) *AuthController {
+func InitController(models *models.Models) *controllers.Controller {
 	router := kbrouter.NewRouter()
 	controller := &AuthController{
 		controllers.Controller{
+			Path:   "/auth",
 			Models: models,
 			Router: router,
 		},
@@ -22,5 +23,5 @@ func InitController(models *models.Models) *AuthController {
 	router.AddRoute("POST", "/login", controller.Login_PostRequest)
 	router.AddRoute("POST", "/signup", controller.Signup_PostRequest)
 
-	return controller
+	return &controller.Controller
 }

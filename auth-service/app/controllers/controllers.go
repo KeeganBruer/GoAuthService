@@ -6,6 +6,7 @@ import (
 )
 
 type Controller struct {
+	Path   string
 	Router *kbrouter.Router
 	Models *models.Models
 }
@@ -13,6 +14,6 @@ type Controller struct {
 func (controller *Controller) GetRouter() *kbrouter.Router {
 	return controller.Router
 }
-func (controller *Controller) AttachToRouter(baseRouter *kbrouter.Router, routePath string) {
-	baseRouter.AddSubRouter(routePath, controller.Router)
+func (controller *Controller) AttachToRouter(baseRouter *kbrouter.Router) {
+	baseRouter.AddSubRouter(controller.Path, controller.Router)
 }
